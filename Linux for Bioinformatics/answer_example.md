@@ -62,7 +62,7 @@ A: it adds a custom channel to search for packages. In this case, bioconda.
 
 Q10. What does the -o athal.ga.gz part of the command do?
 
-A: save the FTP response in a file named athal.ga.gz 
+A: It saves the FTP response in a file named athal.ga.gz 
 
 Q11. What is a .gz file?
 
