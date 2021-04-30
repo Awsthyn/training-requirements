@@ -82,7 +82,7 @@ A: It shows the first 100 lines of the file. (-n flag)
 
 Q15. What is | doing?
 
-It uses the output from the left command as input to the right command. Very used to create pipelines.
+A: It uses the output from the left command as input to the right command. Very used to create pipelines.
 
 Q16. What format are the downloaded sequencing reads in?
 
