@@ -41,7 +41,7 @@ A: I copied the content's `authorized_keys` file from `/home/ubuntu/.ssh/` to `/
 Q7. what does the sudo docker run part of the command do? and what does the salmon swim part of the command do?
 
 A: The docker `run` command first creates a writeable container layer over the specified image, and then starts it using the specified command
-The `salmon swim` command performs super-secret operation, prints on terminal:
+The `salmon swim` command performs super-secret operation... prints on terminal:
 
 ```
     _____       __
@@ -58,7 +58,7 @@ A:
 
 Q9. what does -c bioconda do? 
 
-A: add custom channel to search for packages. In this case, bioconda.
+A: it adds a custom channel to search for packages. In this case, bioconda.
 
 Q10. What does the -o athal.ga.gz part of the command do?
 
@@ -70,19 +70,19 @@ A: A GZ file is an archive file compressed by the standard GNU zip (gzip) compre
 
 Q12. What does the zcat command do? 
 
-A: the zcat command lets you view contents of a compressed file. 
+A: The zcat command lets you view contents of a compressed file. 
 
-Q13. what does the head command do? 
+Q13. What does the head command do? 
 
 A: the head command outputs the first part of files. (default: 10 lines)
 
-Q14. what does the number 100 signify in the command?
+Q14. What does the number 100 signify in the command?
 
 A: show the first 100 lines of the file. (-n flag)
 
 Q15. What is | doing?
 
-Use the output from the left command as input to the right command. Very used to create pipelines.
+It uses the output from the left command as input to the right command. Very used to create pipelines.
 
 Q16. What format are the downloaded sequencing reads in?
 
@@ -102,4 +102,4 @@ A: There is not enough space in disk.
 
 Q20: What was your solution?
 
-A: use the flag --gzip to compress the converted file.
+A: I used the flag --gzip to compress the converted file.
