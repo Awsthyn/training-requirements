@@ -78,7 +78,7 @@ A: the head command outputs the first part of files. (default: 10 lines)
 
 Q14. What does the number 100 signify in the command?
 
-A: show the first 100 lines of the file. (-n flag)
+A: It shows the first 100 lines of the file. (-n flag)
 
 Q15. What is | doing?
 
