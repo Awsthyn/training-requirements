@@ -1,11 +1,7 @@
-from flask import Flask, request, redirect, jsonify
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import and_, func
+from sqlalchemy import and_
 from flask_marshmallow import Marshmallow
-import json
-import pandas as pd
-import numpy as np
-import controllers
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///gapminder.db"
@@ -17,7 +13,7 @@ class Gapminder(db.Model):
     index = db.Column(db.Integer, primary_key=True)
     country = db.Column(db.String(50),nullable=True)
     year = db.Column(db.Float,nullable=True)
-    agriculture = db.Column(db.Float,nullable=True)
+    agriculture_value = db.Column(db.Float,nullable=True)
     co2 = db.Column(db.Float,nullable=True)
     credit = db.Column(db.Float,nullable=True)
     power_consumption = db.Column(db.Float,nullable=True)
@@ -26,11 +22,11 @@ class Gapminder(db.Model):
     fertility = db.Column(db.Float,nullable=True)
     gdp_growth = db.Column(db.Float,nullable=True)
     imports = db.Column(db.Float,nullable=True)
-    industry =db.Column(db.Float,nullable=True)
+    industry_value =db.Column(db.Float,nullable=True)
     inflation = db.Column(db.Float,nullable=True)
     life_expectancy = db.Column(db.Float,nullable=True)
-    population_density = db.Column(db.Float,nullable=True)
-    services = db.Column(db.Float,nullable=True)
+    pop_density = db.Column(db.Float,nullable=True)
+    services_value = db.Column(db.Float,nullable=True)
     pop = db.Column(db.Float,nullable=True)
     continent = db.Column(db.String(50),nullable=True)
     gdp_per_cap = db.Column(db.Float,nullable=True)
@@ -57,8 +53,6 @@ def search_data(request):
     query_conditions = []
     
     for key,value in params.items():
-        if(value.isnumeric() == True):
-            params[key] = int(value)
         tempKeys.append(key.split("-"))
         tempKeys[len(tempKeys)-1].append(value)
     
@@ -67,15 +61,15 @@ def search_data(request):
             query_conditions.append(getattr(Gapminder, key[0]) == key[1])
         else:
             if(key[1]== "gt"):
-                query_conditions.append(getattr(Gapminder, key[0]) > int(key[2]))
+                query_conditions.append(getattr(Gapminder, key[0]) > int(float(key[2])))
             elif(key[1] == "ge"):
-                query_conditions.append(getattr(Gapminder, key[0]) >= int(key[2]))
+                query_conditions.append(getattr(Gapminder, key[0]) >= int(float(key[2])))
             elif(key[1] == "lt"):
-                query_conditions.append(getattr(Gapminder, key[0]) < int(key[2]))
+                query_conditions.append(getattr(Gapminder, key[0]) < int(float(key[2])))
             elif(key[1] == "le"):
-                query_conditions.append(getattr(Gapminder, key[0]) <= int(key[2]))
+                query_conditions.append(getattr(Gapminder, key[0]) <= int(float(key[2])))
             elif(key[1] == "eq"):
-                query_conditions.append(getattr(Gapminder, key[0]) == int(key[2]))
+                query_conditions.append(getattr(Gapminder, key[0]) == int(float(key[2])))
     return query_conditions
 
 @app.route("/api/gapminder")
