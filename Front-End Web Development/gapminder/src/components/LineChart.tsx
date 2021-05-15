@@ -1,11 +1,9 @@
 import React from "react";
 import { Line } from "react-chartjs-2";
-import { COLORS, options } from "./controllers";
+import { COLORS, CountryHash, options } from "./controllers";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-interface CountryHash {
-  [key: string]: any;
-}
+
 
 const LineChart = ({
   countryNames,
@@ -41,7 +39,7 @@ const LineChart = ({
   return (
     <div>
         <select value={variable} onChange={(e)=> setVariable(e.target.value)} className="form-select form-select-lg w-50 mt-3 ms-5" aria-label="select">
-          {dataPerCountry["Algeria"]?.[0] && Object.keys(dataPerCountry["Algeria"]?.[0])?.filter(variable => variable !== "Year" && variable !== "Country Name" && variable !== "").map((variable, index) => (
+          {dataPerCountry["Algeria"]?.[0] && Object.keys(dataPerCountry["Algeria"]?.[0])?.filter(variable => variable !== "continent" && variable !== "Year" && variable !== "Country Name" && variable !== "").map((variable, index) => (
             <option key={index} value={variable}>
               {variable}
             </option>

@@ -1,3 +1,7 @@
+export interface CountryHash {
+  [key: string]: any;
+}
+
 const COLORS = [
     "#64903a",
     "#7951d0",
@@ -112,9 +116,6 @@ const COLORS = [
       ],
     },
     plugins: {
-      tooltip: {
-        callbacks: { beforeLabel: (context: any) => context.raw.label },
-      },
       legend: { display: true, position: "right" },
     },
   };
