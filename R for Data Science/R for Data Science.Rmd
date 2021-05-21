@@ -1,0 +1,262 @@
+---
+title: "R for Data Science"
+author: "Agustín Wagner"
+date: "21/5/2021"
+output: 
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(rstatix)
+library(plotly)
+library(viridis)
+library(car)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<a id="index"></a>
+<h2> Table of Contents </h2>
+<ul>
+    <a href="#one"><li>CO2 emissions (metric tons per capita) and GDP per cap. Year 1962</li></a>
+    <a href="#two"><li>In what year is the correlation between CO2 emissions (metric tons per capita) and gdpPercap the strongest?</li></a>
+    <a href="#three"><li>What is the relationship between continent and 'Energy use (kg of oil equivalent per capita)'?</li></a>
+    <a href="#four"><li>Is there a significant difference between Europe and Asia with respect to 'Imports of goods and services (% of GDP)' in the years after 1990?</li></a>
+    <a href="#five"><li>What is the country (or countries) that has the highest 'Population density (people per sq. km of land area)' across all years? (i.e., which country has the highest average ranking in this category across each time point in the dataset?)</li></a>
+    <a href="#six"><li>What country (or countries) has shown the greatest increase in 'Life expectancy at birth, total (years)' since 1962?</li></a>
+</ul>
+
+```{r import data, warning=FALSE, message=FALSE}
+gapminder <- read_csv(file="gapminder_clean.csv")
+gapminder <- as_tibble(gapminder)
+```
+
+
+<a id="one"></a>
+<h3>CO2 emissions (metric tons per capita) and GDP per cap. Year 1962</h3>
+<a href="#index">Go to the table of contents</a>
+
+```{r first question, warning=FALSE, message=FALSE}
+
+filtered_data <- filter(gapminder, Year==1962, continent != "NA", `Country Name`!= "Kuwait")
+ggplotly(
+ggplot(data = filtered_data) +
+  geom_point(mapping = aes(x = `CO2 emissions (metric tons per capita)`, 
+                           y = `gdpPercap`, color=`continent`,
+                           label = `Country Name`,
+                           size=pop))        
+, tooltip="all")
+```
+
+```{r pearson, warning=FALSE, message=FALSE}
+pearson <- cor.test(filtered_data$`CO2 emissions (metric tons per capita)`, 
+                    filtered_data$`gdpPercap`, 
+                    method = "pearson")
+cat("Pearson correlation of CO2 emissions (metric tons per capita) and gdpPercap, year 1962:\n","Correlation value: ", pearson[["estimate"]][["cor"]], "\n", "p-value: ", pearson[["p.value"]])
+
+
+```
+
+<a id="two"></a>
+<h3>In what year is the correlation between CO2 emissions (metric tons per capita) and gdpPercap the strongest?</h3>
+<a href="#index">Go to the table of contents</a>
+
+```{r second question, warning=FALSE, message=FALSE}
+unfiltered_data <- filter(gapminder, Year!=1962, `Country Name`!= "Kuwait", continent != "NA", `gdpPercap` != "NA",`CO2 emissions (metric tons per capita)` != "NA") %>%
+group_by(Year) %>%
+summarise(COR=cor(`CO2 emissions (metric tons per capita)`,`gdpPercap`, method = "pearson")) %>%
+arrange(desc(COR)) %>%
+slice_head(n=1)
+unfiltered_data
+```
+```{r second plot, warning=FALSE, message=FALSE}
+filtered_data <- filter(gapminder, Year==1972, continent != "NA", `Country Name`!= "Kuwait")
+ggplotly(
+ggplot(data = filtered_data) +
+  geom_point(mapping = aes(x = `CO2 emissions (metric tons per capita)`, 
+                           y = `gdpPercap`, color=`continent`,
+                           label = `Country Name`,
+                           size=pop))        
+, tooltip="all")
+```
+
+<a id="three"></a>
+<h3>What is the relationship between continent and 'Energy use (kg of oil equivalent per capita)'?</h3>
+<a href="#index">Go to the table of contents</a>
+
+```{r third question, warning=FALSE, message=FALSE}
+energy_by_continent <- filter(gapminder,`continent` != "NA", `Energy use (kg of oil equivalent per capita)` != "NA") %>%
+group_by(continent) %>%
+summarize(
+  mean = mean(`Energy use (kg of oil equivalent per capita)`)
+)
+print(energy_by_continent)
+```
+
+```{r third plot, warning=FALSE, message=FALSE}
+ggplotly(
+ggplot(data = filter(gapminder,`continent` != "NA")) +
+  geom_boxplot(mapping = aes(y = `Energy use (kg of oil equivalent per capita)`,x = `continent`, fill=continent))
+)
+```
+
+I need to know if the data satisfy parametric requirements to use parametric tests.
+<ol>
+<li>The population from which samples are drawn should be normally distributed. -> Shapiro-Wilk test.</li>
+<li>Independence of cases: the sample cases should be independent of each other. -> I assume that this condition is satisfied.</li>
+<li>Homogeneity of variance: Homogeneity means that the variance among the groups should be approximately equal. -> Levene test </li>
+</ol>
+<p>First, I separate the "Energy use" data per continent, (I'll have five series, one per each continent), and I remove missing values to avoid errors on tests.</p>
+
+```{r third question shapiro, warning=FALSE, message=FALSE}
+
+americas_energy <- filter(gapminder, continent=="Americas", `Energy use (kg of oil equivalent per capita)`!= "NA")
+africa_energy <- filter(gapminder, continent=="Africa", `Energy use (kg of oil equivalent per capita)`!= "NA")
+asia_energy <- filter(gapminder, continent=="Asia", `Energy use (kg of oil equivalent per capita)`!= "NA")
+europe_energy <- filter(gapminder, continent=="Europe", `Energy use (kg of oil equivalent per capita)`!= "NA")
+oceania_energy <- filter(gapminder, continent=="Oceania", `Energy use (kg of oil equivalent per capita)`!= "NA")
+
+shapiro_america <- shapiro.test(americas_energy$`Energy use (kg of oil equivalent per capita)`)
+shapiro_africa <- shapiro.test(africa_energy$`Energy use (kg of oil equivalent per capita)`)
+shapiro_asia <- shapiro.test(asia_energy$`Energy use (kg of oil equivalent per capita)`)
+shapiro_europe <- shapiro.test(europe_energy$`Energy use (kg of oil equivalent per capita)`)
+shapiro_oceania <- shapiro.test(oceania_energy$`Energy use (kg of oil equivalent per capita)`)
+cat("P-values: \n",
+"Americas: ",shapiro_america[["p.value"]], " Reject null hypotesis","\n",
+"Oceania: ",shapiro_oceania[["p.value"]],"Can not reject null hypotesis","\n",
+"Africa: ",shapiro_africa[["p.value"]]," Reject null hypotesis","\n",
+"Europe: ",shapiro_europe[["p.value"]]," Reject null hypotesis","\n",
+"Asia: ",shapiro_asia[["p.value"]]," Reject null hypotesis")
+```
+Shapiro-Wilk tests: rejected 4/5 null hypotheses. Data is not normal distributed.
+```{r third question leneve, warning=FALSE, message=FALSE}
+with(gapminder, leveneTest(`Energy use (kg of oil equivalent per capita)`, continent))
+```
+Leneve test: rejected null hypothesis.
+
+<p>Shapiro-Wilk and Leneve tests were rejected. Data doesn't satisfy parametric requeriments. So I need to use non-parametric tests.</p>
+####  Kruskal-Wallis H-test
+<p>The Kruskal-Wallis H-test tests the null hypothesis that the population median of all of the groups are equal. </p>
+```{r third question kruskal, warning=FALSE, message=FALSE}
+kruskal.test(`Energy use (kg of oil equivalent per capita)` ~ continent, data = gapminder)
+```
+<p>Kruskal-Wallis H-test: rejected null hypothesis.</p>
+<p>So I have to compare the means to detect the differences and similarities between continents.</p>
+
+#### Dunn’s test
+<p>Post hoc pairwise test for multiple comparisons of mean rank sums. 
+This test is run after Kruskal-Wallis's one-way analysis of variance by ranks to do pairwise comparisons.</p>
+```{r third question dunn, warning=FALSE, message=FALSE}
+dunn_test(gapminder, `Energy use (kg of oil equivalent per capita)` ~ continent)
+```
+<p>Asia's and Americas' energy use means are similar.</p>
+<p>Oceania's and Europe's energy use means are similar.</p>
+
+<a id="four"></a>
+<h3>Is there a significant difference between Europe and Asia with respect to 'Imports of goods and services (% of GDP)' in the years after 1990? </h3>
+<a href="#index">Go to the table of contents</a>
+
+```{r fourth question, warning=FALSE, message=FALSE}
+
+europe_and_asia_after_1990 <- filter(gapminder, 
+                                     `Country Name`!= "Singapore", 
+                                     `continent` == "Asia" | `continent` == "Europe",
+                                     Year > 1990,
+                                     `Imports of goods and services (% of GDP)` < 97 
+                                     & `Imports of goods and services (% of GDP)` != "NA" )
+
+ggplot(data = europe_and_asia_after_1990) +
+  geom_boxplot(mapping = aes(x = `Imports of goods and services (% of GDP)`, 
+                             y = `continent`, fill=continent))
+```
+
+```{r fourth question shapiro, warning=FALSE, message=FALSE}
+europe_imports <- filter(europe_and_asia_after_1990, continent=="Europe")
+asia_imports <- filter(europe_and_asia_after_1990, continent=="Asia")
+
+shapiro.test(europe_imports$`Imports of goods and services (% of GDP)`)
+shapiro.test(asia_imports$`Imports of goods and services (% of GDP)`)
+```
+```{r fourth question leneve, warning=FALSE, message=FALSE}
+with(europe_and_asia_after_1990, leveneTest(`Imports of goods and services (% of GDP)`, continent))
+```
+<ul>
+    <li>Shapiro-Wilk tests: rejected 1/2 null hypotheses. Data is not normal distributed.</li>
+    <li>Leneve test: rejected null hypothesis.</li>
+</ul>
+<p>Like the anterior case, parametric requirements are not satisfied. I need to compare two means using a non-parametric test.</p>
+
+#### Mann-Whitney U test
+
+<p>The Mann-Whitney U test is used to compare differences between two independent groups when the dependent variable is either ordinal or continuous, but not normally distributed. 
+</p>
+```{r fourth question mann-whitney, warning=FALSE, message=FALSE}
+wilcox.test(`Imports of goods and services (% of GDP)` ~ continent, data=europe_and_asia_after_1990)
+```
+Can not reject the null hypothesis of identical average scores.
+
+<a id="five"></a>
+<h3>What is the country (or countries) that has the highest 'Population density (people per sq. km of land area)' across all years? (i.e., which country has the highest average ranking in this category across each time point in the dataset?)</h3>
+<a href="#index">Go to the table of contents</a>
+
+
+```{r fifth question, warning=FALSE, message=FALSE}
+pop_density <- select(gapminder, `Country Name`, Year, continent, 
+  `Population density (people per sq. km of land area)`) %>%
+  filter(`Country Name`!= "NA", `Population density (people per sq. km of land area)` != "NA")
+
+
+group_by(pop_density,`Country Name`) %>%
+  summarise(mean = mean(`Population density (people per sq. km of land area)`)) %>%
+  arrange(desc(mean)) %>%
+  slice_head(n=5)
+```
+
+```{r fifth question plot, warning=FALSE, message=FALSE}
+ggplotly(
+ggplot(data = pop_density) +
+  geom_line(mapping = aes(x = `Year`, group = `Country Name`,
+  color=`Country Name`,
+  y = `Population density (people per sq. km of land area)`)) +
+  theme_bw()+
+  theme(legend.position="bottom") +
+  theme(legend.position = "none")
+)
+```
+<a id="six"></a>
+<h3>What country (or countries) has shown the greatest increase in 'Life expectancy at birth, total (years)' since 1962?</h3>
+<a href="#index">Go to the table of contents</a>
+<a id="six"></a>
+<p>I'll extract the first and the last record that contains the "Life expectancy at birth" value for each country (not the minimum and maximum values), I'll subtract the last minus the first value and then I'll calculate the relative increment, in percentage:</p>
+<code>relative increment (%) = (last record - first record)/first record * 100</code>
+
+```{r sixth question, warning=FALSE, message=FALSE}
+
+life_expectancy_by_country <- select(gapminder, `Country Name`, Year, `Life expectancy at birth, total (years)`) %>%
+  filter(`Country Name`!= "NA", `Life expectancy at birth, total (years)` != "NA") %>%
+  group_by(`Country Name`) %>%
+  summarise(
+            `Life expectancy. Last record.(years)` = last(`Life expectancy at birth, total (years)`),
+            `Absolute difference (years)` = last(`Life expectancy at birth, total (years)`) - first(`Life expectancy at birth, total (years)`),
+            `Relative difference, (%)` = (last(`Life expectancy at birth, total (years)`) 
+                    - first(`Life expectancy at birth, total (years)`)) 
+                    / first(`Life expectancy at birth, total (years)`) * 100) %>%
+  arrange(desc(`Relative difference, (%)`))
+slice_head(life_expectancy_by_country, n=5)
+```
+
+```{r sixth question plot, warning=FALSE, message=FALSE}
+ggplotly(
+ggplot(data = life_expectancy_by_country) +
+  (aes(size=`Absolute difference (years)`,
+       y=`Life expectancy. Last record.(years)`, 
+       x=`Relative difference, (%)`, 
+       fill=`Country Name`)) +
+  geom_point(alpha=0.5, shape=21) +
+  scale_size(range = c(.1, 10),) +
+  theme_bw() +
+  theme(legend.position="bottom") +
+  theme(legend.position = "none")
+)
+```
